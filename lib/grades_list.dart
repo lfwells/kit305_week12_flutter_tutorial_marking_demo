@@ -18,6 +18,7 @@ class _GradesListState extends State<GradesList> {
   Widget build(BuildContext context) {
     return Consumer<GradesProvider>(
       builder: (context, gradesModel, _) {
+        print("rebuild the list?? ${ gradesModel.grades.length.toString()}");
         if (gradesModel.loading)
         {
           return const Center(
@@ -26,6 +27,7 @@ class _GradesListState extends State<GradesList> {
         }
 
         var thisWeeksGrades = gradesModel.getGradesForWeek(widget.week);
+        print("rebuild the list?? ${ thisWeeksGrades.length.toString()}");
 
         return TheGradesList(thisWeeksGrades: thisWeeksGrades);
       }
@@ -54,6 +56,13 @@ class _TheGradesListState extends State<TheGradesList> {
     filteredGrades = widget.thisWeeksGrades;
   }
 
+
+  @override
+  void didUpdateWidget(TheGradesList oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    filteredGrades = widget.thisWeeksGrades;
+  }
+
   @override
   Widget build(BuildContext context) {
     return Column(
@@ -61,6 +70,7 @@ class _TheGradesListState extends State<TheGradesList> {
         Padding(
           padding: const EdgeInsets.all(8.0),
           child: TextFormField(
+            keyboardType: TextInputType.number,
             decoration: const InputDecoration(
               labelText: "Student ID",
             ),
@@ -81,9 +91,23 @@ class _TheGradesListState extends State<TheGradesList> {
               var grade = filteredGrades[i];
               return Dismissible(
                 key: Key(grade.id),
-                onDismissed: (direction) {
+                confirmDismiss: (direction) async {
                   var gradesModel = Provider.of<GradesProvider>(context, listen: false);
-                  gradesModel.remove(grade);
+                  //could have a "popup are you sure?"
+
+                  var confirmedDelete = await showDialog<bool>(context: context, builder: (context) => AlertDialog(
+                    title: const Text("Delete this grade?"),
+                    content: const Text("Are you sure? This can't be undone"),
+                    actions: [
+                      TextButton(child: const Text("Yes", style:const TextStyle(color: Colors.red)), onPressed: () { return Navigator.pop(context, true);},),
+                      TextButton(child: const Text("No"), onPressed: () { return Navigator.pop(context, false); }),
+                    ],
+                  ));
+                  if (confirmedDelete ?? false)
+                  {
+                    await gradesModel.remove(grade);
+                  }
+                  return confirmedDelete ?? false;
                 },
                 background: Container(color: Colors.red),
                 child: ListTile(
@@ -94,6 +118,12 @@ class _TheGradesListState extends State<TheGradesList> {
             },
           ),
         ),
+        Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: Text("Total grade: "+filteredGrades
+              .map((grade)=>grade.doubleGrade)
+              .reduce((value, element) => value+element).toString()),
+        )
       ],
     );
   }

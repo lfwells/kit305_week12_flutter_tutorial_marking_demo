@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 
 import 'package:firebase_core/firebase_core.dart';
+import 'package:get/get.dart';
+import 'package:kit305_week12_flutter_tutorial_marking_demo/add_grade.dart';
 import 'package:kit305_week12_flutter_tutorial_marking_demo/grade.dart';
 import 'package:kit305_week12_flutter_tutorial_marking_demo/grades_provider.dart';
 import 'package:provider/provider.dart';
@@ -88,7 +90,12 @@ class _TabsState extends State<Tabs>
         builder: (context, gradesModel, _) {
           return FloatingActionButton(
             onPressed: () {
-              //gradesModel.add(Grade("Hello", "World"));
+              /*Get.to(
+                  AddGradeScreen(week: currentWeek),
+                  duration: Duration(seconds: 10),
+                  transition: Transition.downToUp
+              )*/
+              Navigator.of(context).push(MaterialPageRoute(builder: (context) => AddGradeScreen(week: currentWeek)));
             },
             child: gradesModel.addLoading ? const Text("...") : const Icon(Icons.add),
           );

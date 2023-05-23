@@ -38,9 +38,10 @@ class GradesProvider extends ChangeNotifier
     addLoading = true;
     notifyListeners();
 
-    await _collection.add(newGrade.toJson());
-
+    var newDocRef = await _collection.add(newGrade.toJson());
+    newGrade.id = newDocRef.id;
     grades.add(newGrade);
+
     addLoading = false;
     notifyListeners();
   }
